@@ -100,7 +100,6 @@ python enhance_night_road.py
 - comparison.png → original vs enhanced side-by-side.
 
 ### Results
-Before vs After Enhancement
 <img width="568" height="322" alt="Image" src="https://github.com/user-attachments/assets/398ea651-6e7c-4866-8115-3cbd7148ea22" />
 
 <img width="564" height="287" alt="Image" src="https://github.com/user-attachments/assets/1479b1f7-d3fd-4c7e-8d06-27155a611d27" />
