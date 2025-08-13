@@ -110,8 +110,6 @@ python enhance_night_road.py
 ### Notes
 Works best on low-light or nighttime images. Can be used for real-time enhancement with video streams. Prevents over-amplification of noise with clipLimit.
 
-### License
-Licensed under the MIT License; free to use and modify.
 
 ### Acknowledgements
 Thanks to OpenCV for image processing tools, NumPy for numerical operations, and Matplotlib for visualizations.
