@@ -15,10 +15,18 @@ Driving at night can be tough due to **low light and poor contrast**. This proje
 ---
 
 ## Requirements
-Install the necessary dependencies:
-```bash
-pip install opencv-python numpy matplotlib
-```
+step1:mkdir -p ~/Desktop/NightVision
+cd ~/Desktop/NightVision
+pwd
+step2:sudo apt update
+sudo apt install -y python3 python3-pip wget
+python3 -m pip install --upgrade pip
+step3:pip3 install numpy matplotlib opencv-python
+step5:wget https://images.unsplash.com/photo-1501594907352-04cda38ebc29 -O night_road.jpg
+ls -l
+step6:python3 night_vision.py
+step7:xdg-open comparison.png >/dev/null 2>&1 &
+
 ### Project Files
 ```
 .
@@ -30,63 +38,57 @@ pip install opencv-python numpy matplotlib
 ```
 ### Code
 ```python
-import os
+cat > night_vision.py <<'PY'
+#!/usr/bin/env python3
+import os, sys
 import cv2
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')  
+matplotlib.use('Agg')          # no GUI needed (prevents VM crashes)
 import matplotlib.pyplot as plt
 
-# ---------- CONFIG ----------
-IMAGE_PATH = "night_road.jpg"  # Change if needed
-# ----------------------------
-
-# Check if the image exists
+# --- image path: from CLI arg or default file in folder ---
+IMAGE_PATH = sys.argv[1] if len(sys.argv) > 1 else "night_road.jpg"
 if not os.path.exists(IMAGE_PATH):
-    print(f"ERROR: Image file '{IMAGE_PATH}' not found!")
-    exit()
+    print(f"ERROR: '{IMAGE_PATH}' not found in {os.getcwd()}")
+    sys.exit(1)
 
-# Load and convert to grayscale
-image = cv2.imread(IMAGE_PATH)
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+img = cv2.imread(IMAGE_PATH)
+if img is None:
+    print(f"ERROR: OpenCV could not read '{IMAGE_PATH}'.")
+    sys.exit(1)
 
-# Function to calculate brightness and contrast
-def get_stats(img):
-    brightness = np.mean(img)
-    contrast = img.std()
-    return brightness, contrast
+# to grayscale
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-# Stats before enhancement
-b_before, c_before = get_stats(gray)
+# stats
+def stats(x): return float(np.mean(x)), float(np.std(x))
+b_before, c_before = stats(gray)
 
-# Apply CLAHE
-clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+# CLAHE enhancement
+clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
 enhanced = clahe.apply(gray)
+b_after, c_after = stats(enhanced)
 
-# Stats after enhancement
-b_after, c_after = get_stats(enhanced)
+# save outputs
+out_enhanced = "enhanced_road.jpg"
+out_compare  = "comparison.png"
+cv2.imwrite(out_enhanced, enhanced)
 
-# Create figure
-fig, axes = plt.subplots(1, 2, figsize=(12, 6))
-
-# Original image
-axes[0].imshow(gray, cmap='gray')
-axes[0].set_title(f"Original\nBrightness: {b_before:.1f}, Contrast: {c_before:.1f}")
-axes[0].axis('off')
-
-# Enhanced image
-axes[1].imshow(enhanced, cmap='gray')
-axes[1].set_title(f"Enhanced (CLAHE)\nBrightness: {b_after:.1f}, Contrast: {c_after:.1f}")
-axes[1].axis('off')
-
-plt.suptitle("Night Vision Enhancement for Road Safety", fontsize=16, color='blue')
+# side-by-side figure (saved to file)
+fig, ax = plt.subplots(1,2, figsize=(12,6))
+ax[0].imshow(gray, cmap='gray')
+ax[0].set_title(f'Original\nBrightness:{b_before:.1f}  Contrast:{c_before:.1f}')
+ax[0].axis('off')
+ax[1].imshow(enhanced, cmap='gray')
+ax[1].set_title(f'Enhanced (CLAHE)\nBrightness:{b_after:.1f}  Contrast:{c_after:.1f}')
+ax[1].axis('off')
+plt.suptitle('Night Vision Enhancement for Road Safety')
 plt.tight_layout()
-plt.savefig("comparison.png")
-print("Comparison image saved as comparison.png")
+plt.savefig(out_compare, dpi=150)
 
-# Save enhanced image
-cv2.imwrite("enhanced_road.jpg", enhanced)
-print("Enhanced image saved as 'enhanced_road.jpg'")
+print(f"✅ Saved files: {out_enhanced}, {out_compare}")
+PY
 ```
 ### How to Run
 Place your nighttime image as night_road.jpg in the project folder.
